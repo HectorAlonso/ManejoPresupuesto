@@ -1,0 +1,89 @@
+﻿@model IEnumerable<TipoCuenta>
+
+@{
+    ViewData["Title"] = "Tipos Cuentas";
+}
+
+<h1>Tipos de Cuentas</h1>
+<h5>El tipo de cuenta se refiere a cómo podemos agrupar cuentas. Ejemplos: Préstamos, tarejtas de crédito, etc.</h5>
+
+<a asp-action="Crear" class="btn btn-primary mb-4">Crear Nuevo</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Acciones</th>
+            <th>Nombre</th>
+        </tr>
+    </thead>
+    <tbody id="reordenable">
+        @foreach (var tipoCuenta in Model)
+        {
+            <tr>
+                <td>
+                    <input type="hidden" value="@tipoCuenta.Id" class="ids" />
+                    <a class="btn btn-primary" asp-action="Editar" asp-route-Id="@tipoCuenta.Id">Editar</a>
+                    <a class="btn btn-danger" asp-action="Borrar" asp-route-Id="@tipoCuenta.Id">Borrar</a>
+                </td>
+                <td>
+                    @tipoCuenta.Nombre
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script>
+
+        const urlOrdenar = '@Url.Action("Ordenar")';
+
+        //Funcion que se ejecuta cuando se carga la pagina para poder reordenar las tipos cuentas
+        $(function (){
+            $("#reordenable").sortable({
+                stop: async function (e, ui) {
+                    await actualizarOrdenes();
+                }
+            });
+
+            async function actualizarOrdenes() {
+                const ids = obtenerIdsDeElementos();
+                await EnviarIdsAlBackend(ids);
+            }
+
+            function obtenerIdsDeElementos() {
+                const ids = $(".ids").map(function () {
+                    return $(this).val();
+                }).get();
+
+                return ids;
+            }
+
+            async function EnviarIdsAlBackend(ids) {
+                var data = JSON.stringify(ids);
+                await fetch(urlOrdenar, {
+                    method: 'POST',
+                    body: data,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                @*$.ajax({
+                    url: '@Url.Action("Ordenar", "TiposCuentas")',
+                    data: data,
+                    type: "POST",
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: await function (result) {
+                        alert("Envio exitoso");
+                        console.log(JSON.stringify(ids));
+                    },
+                    error: function () {
+                        alert("Algo ha salido mal");
+                    }
+                });*@
+            }
+        });
+
+    </script>
+}
